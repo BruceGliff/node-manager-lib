@@ -1,0 +1,20 @@
+cmake_minimum_required(VERSION 3.10.2 FATAL_ERROR)
+
+set(PROJECT_NAME node-manager)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 20)
+
+project(${PROJECT_NAME})
+
+file(GLOB_RECURSE SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/lib/*.cc)
+add_library(${PROJECT_NAME} SHARED ${SRC_FILES})
+
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -O0 -g)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+set(OUT_DIR ${CMAKE_LIBRARY_DIR}/lib/${PROJECT_NAME})
+set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${OUT_DIR})
