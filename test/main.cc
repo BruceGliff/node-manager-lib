@@ -1,3 +1,6 @@
-#include <nmgr/pts.h>
+#include <nmgr/interface.h>
 
-int main() { print(); }
+int main() {
+  nmgr::createMemory();
+  return 0;
+}

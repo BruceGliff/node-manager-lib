@@ -2,9 +2,6 @@
 
 namespace nmgr {
 
-struct Point {
-  float X;
-  float Y;
-};
+void createMemory();
 
 } // namespace nmgr
