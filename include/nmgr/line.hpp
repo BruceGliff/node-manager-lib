@@ -11,12 +11,11 @@ template <unsigned Width>
 class Line : public LineBase {
   Point *Points = nullptr;
 
-  unsigned constexpr Capacity = Width;
   unsigned Size = 0;
   Line() {} //
 
 public:
-  static createLine(/*memory manager.*/);
+  static Line createLine(/*memory manager.*/) { return Line{}; }
 };
 
 } // namespace nmgr

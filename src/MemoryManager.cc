@@ -6,7 +6,7 @@
 
 using namespace nmgr;
 
-MemoryManager::MemoryManager() : Buffer(allocMemory()) {}
+MemoryManager::MemoryManager() : Buffer(allocMemory()), CD(calcSize()) {}
 
 void *MemoryManager::allocMemory() {
   unsigned constexpr MaxLineWidth = 1 << 16;
@@ -18,6 +18,11 @@ void *MemoryManager::allocMemory() {
   std::cerr << "\tBuffer size = " << sizeof(Point) * PointsToAlloc << "\n"
             << std::endl;
   return Buffer;
+}
+
+unsigned MemoryManager::calcSize() {
+  return /*lines*/ 16 * /*MaxLineWidth*/ (1 << 16) /
+         /*because number of line in row is decreasing*/ 2;
 }
 
 MemoryManager::~MemoryManager() { ::operator delete(Buffer); }
