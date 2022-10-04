@@ -35,12 +35,37 @@ class CellDescription {
     return os;
   }
 
-  uint32_t const Size;
   std::vector<Cell> Desc;
+
+  uint32_t getFirstFreeIdx() const {
+    auto FirstFree = std::find_if(Desc.begin(), Desc.end(), [](Cell const &C) {
+      return C == Cell::FREE;
+    });
+    // TODO check if there is no free cell.
+    return std::distance(Desc.begin(), FirstFree);
+  }
+
+  uint32_t getFirstFreeIdx(uint32_t From) const {
+    // TODO validate input.
+    auto FirstFree =
+        std::find_if(Desc.begin() + From, Desc.end(),
+                     [](Cell const &C) { return C == Cell::FREE; });
+    // TODO check if there is no free cell.
+    return std::distance(Desc.begin(), FirstFree);
+  }
+
+  uint32_t getFirstFreeIdx(uint32_t From, uint32_t Till) const {
+    // TODO validate input.
+    auto FirstFree =
+        std::find_if(Desc.begin() + From, Desc.begin() + Till,
+                     [](Cell const &C) { return C == Cell::FREE; });
+    // TODO check if there is no free cell.
+    return std::distance(Desc.begin(), FirstFree);
+  }
 
 public:
   CellDescription(uint32_t SizeIn)
-      : Size{SizeIn}, Desc{std::vector<Cell>{Size, Cell::OCCUPIED}} {
+      : Desc{std::vector<Cell>{SizeIn, Cell::OCCUPIED}} {
     std::cerr << "Allocating Description: " << Desc.size() << std::endl;
   }
 
@@ -50,14 +75,28 @@ public:
     return Desc.at(Pos);
   }
 
-  void Print() const {
+  uint32_t getLineIdx(uint32_t Pos) const;
+  uint32_t occupyLine(uint32_t Pos);
+
+  std::ostream &Print(std::ostream &os) const {
     for (auto const &C : Desc)
-      PrintCell(std::cerr, C) << ' ';
+      PrintCell(os, C) << ' ';
+    return os;
   }
 };
 
 class MemoryManager {
+  friend CellDescription;
   void *Buffer = nullptr;
+
+  // This struct only need for address calculating.
+  // The smallest line entity is the Line<2> and all calculating are in terms of
+  // Line<2>.
+  // TODO get rid of DummyLine.
+  struct DummyLine {
+    Point P[2];
+    DummyLine() = delete;
+  };
 
   // Min line is Line<2> which contains two points.
   static constexpr uint32_t MaxLineWidth = 16;
@@ -76,9 +115,14 @@ public:
   MemoryManager();
 
   template <uint32_t Width> Line<Width> createLine() {
-    uint32_t constexpr Row = getPowOfTwo<Width>();
-    std::cout << Row << std::endl;
-    return Line<Width>::createLine();
+    static_assert(Width != 1 && "Line<1> is prohibited.");
+    uint32_t constexpr Row = getPowOfTwo<Width>() - 1;
+
+    uint32_t const DescIdx = CD.getFirstFreeIdx(Row);
+    uint32_t const LineIdx = CD.occupyLine(DescIdx);
+
+    std::cout << LineIdx << std::endl;
+    return Line<Width>::createLine(nullptr);
   }
 
   ~MemoryManager();

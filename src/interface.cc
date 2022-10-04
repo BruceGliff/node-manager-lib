@@ -4,7 +4,7 @@
 
 void nmgr::createMemory() {
   MemoryManager M;
-  M.createLine<1u>();
+  // M.createLine<1u>();
   M.createLine<2u>();
   M.createLine<4u>();
   M.createLine<8u>();
