@@ -4,6 +4,7 @@
 #include "nmgr/line.hpp"
 
 #include <cstdint>
+#include <optional>
 #include <unordered_map>
 #include <vector>
 // TODO remove
@@ -34,20 +35,24 @@ class MemoryManager {
     // Total number of point to which memory is allocated.
     static constexpr uint32_t TotalPoints = MaxLineWidth * NumOfLineWidths;
   };
-  using I = Info<32>;
+  // 1 << 20 ~ 170MB data
+  // 1 << 24 ~ 3GB data
+  // 1 << 26 ~ 14GB data, but already large address range.
+  // 1 << 27 - cannot alloc so much.
+  using I = Info<(1u << 5)>;
 
   class CellDescription {
     enum class Cell : uint8_t { FREE = 0, OCCUPIED, UNDEF };
-    static std::ostream &PrintCell(std::ostream &os, Cell const &C) {
+    static std::ostream &printCell(std::ostream &os, Cell const &C) {
       switch (C) {
       case Cell::FREE:
-        os << "free";
+        os << "f";
         break;
       case Cell::OCCUPIED:
-        os << "occu";
+        os << "o";
         break;
       default:
-        os << "udef";
+        os << "u";
         break;
       }
       return os;
@@ -55,13 +60,14 @@ class MemoryManager {
     using Cells = std::vector<Cell>;
     Cells Desc;
 
-    static constexpr uint32_t LineMask = (1u << (I::NumOfLineWidths + 1u)) - 1u;
+    static constexpr uint32_t LineMask = (1u << I::NumOfLineWidths) - 1u;
     static constexpr uint32_t ShiftMask = LineMask ^ -1;
 
     template <uint32_t Width>
     uint32_t constexpr getDescIdxBeginOfCertainLine() const {
       uint32_t const Shift = getPowOfTwo<Width>() - 1;
-      return (ShiftMask >> Shift) & LineMask;
+      uint32_t const DescIdx = (ShiftMask >> Shift) & LineMask;
+      return DescIdx;
     }
 
     template <uint32_t Width>
@@ -111,19 +117,28 @@ class MemoryManager {
       std::cerr << "Allocating Description: " << Desc.size() << std::endl;
     }
 
-    template <uint32_t Width> uint32_t retrieveFirstFree() {
+    template <uint32_t Width> std::optional<uint32_t> retrieveFirstFree() {
       auto const Begin = getDescBeginOfCertainLine<Width>();
       auto const End = getDescEndOfCertainLine<Width>();
       auto const FindIt = std::find(Begin, End, Cell::FREE);
-      if (FindIt == Desc.end())
-        std::cerr << "No free cells for Line<" << Width << ">." << std::endl;
+      if (FindIt == End)
+        return {};
       *FindIt = Cell::OCCUPIED;
       return getMemoryOffset(FindIt);
     }
 
-    std::ostream &Print(std::ostream &os) const {
-      for (auto const &C : Desc)
-        PrintCell(os, C) << ' ';
+    std::ostream &print(std::ostream &os) const {
+      uint32_t Inc = 0;
+      uint32_t Latch = I::MinInMax;
+      os << '|';
+      for (auto const &C : Desc) {
+        printCell(os, C);
+        if (++Inc == Latch) {
+          os << '|';
+          Latch /= 2;
+          Inc = 0;
+        }
+      }
       return os;
     }
   } CD;
@@ -138,10 +153,17 @@ public:
   MemoryManager();
 
   template <uint32_t Width> Line<Width> createLine() {
-    uint32_t const Offset = CD.retrieveFirstFree<Width>();
+    std::cerr << "Attempt to create Line<" << Width << ">." << std::endl;
+    auto const IsOffset = CD.retrieveFirstFree<Width>();
+    if (!IsOffset) {
+      std::cerr << "No free cells for Line<" << Width << ">." << std::endl;
+      return Line<Width>::createLine(nullptr);
+    }
+    // TODO Offset does not work.
+    uint32_t const Offset = IsOffset.value();
     I::DummyLine *Start = static_cast<I::DummyLine *>(Buffer);
     Point *Ptr = reinterpret_cast<Point *>(Start + Offset);
-    std::cerr << Offset << std::endl;
+    // CD.print(std::cerr) << std::endl;
     return Line<Width>::createLine(Ptr);
   }
 
