@@ -11,118 +11,138 @@
 
 namespace nmgr {
 
-// TODO forward decl?
-// template <unsigned Width>
-// class Line;
-
-class MemoryManager;
-// This class describes which cells in MemoryManager are free=0 and occupied=1;
-class CellDescription {
-  friend MemoryManager;
-  enum class Cell : uint8_t { FREE = 0, OCCUPIED, UNDEF };
-  static std::ostream &PrintCell(std::ostream &os, Cell const &C) {
-    switch (C) {
-    case Cell::FREE:
-      os << "free";
-      break;
-    case Cell::OCCUPIED:
-      os << "occu";
-      break;
-    default:
-      os << "udef";
-      break;
-    }
-    return os;
-  }
-
-  std::vector<Cell> Desc;
-
-  uint32_t getFirstFreeIdx() const {
-    auto FirstFree = std::find_if(Desc.begin(), Desc.end(), [](Cell const &C) {
-      return C == Cell::FREE;
-    });
-    // TODO check if there is no free cell.
-    return std::distance(Desc.begin(), FirstFree);
-  }
-
-  uint32_t getFirstFreeIdx(uint32_t From) const {
-    // TODO validate input.
-    auto FirstFree =
-        std::find_if(Desc.begin() + From, Desc.end(),
-                     [](Cell const &C) { return C == Cell::FREE; });
-    // TODO check if there is no free cell.
-    return std::distance(Desc.begin(), FirstFree);
-  }
-
-  uint32_t getFirstFreeIdx(uint32_t From, uint32_t Till) const {
-    // TODO validate input.
-    auto FirstFree =
-        std::find_if(Desc.begin() + From, Desc.begin() + Till,
-                     [](Cell const &C) { return C == Cell::FREE; });
-    // TODO check if there is no free cell.
-    return std::distance(Desc.begin(), FirstFree);
-  }
-
-public:
-  CellDescription(uint32_t SizeIn)
-      : Desc{std::vector<Cell>{SizeIn, Cell::OCCUPIED}} {
-    std::cerr << "Allocating Description: " << Desc.size() << std::endl;
-  }
-
-  Cell const &at(uint32_t Pos) const {
-    // TODO assert checks Size
-    std::cerr << "Getting info about line: " << Pos << std::endl;
-    return Desc.at(Pos);
-  }
-
-  uint32_t getLineIdx(uint32_t Pos) const;
-  uint32_t occupyLine(uint32_t Pos);
-
-  std::ostream &Print(std::ostream &os) const {
-    for (auto const &C : Desc)
-      PrintCell(os, C) << ' ';
-    return os;
-  }
-};
-
 class MemoryManager {
-  friend CellDescription;
-  void *Buffer = nullptr;
 
-  // This struct only need for address calculating.
-  // The smallest line entity is the Line<2> and all calculating are in terms of
-  // Line<2>.
-  // TODO get rid of DummyLine.
-  struct DummyLine {
-    Point P[2];
-    DummyLine() = delete;
+  // Compile-time known information about line alignment.
+  template <uint32_t Width> struct Info {
+    // This struct only need for address calculating.
+    // The smallest line entity is the Line<2> and all calculating are in terms
+    // of Line<2>.
+    // TODO get rid of DummyLine.
+    struct DummyLine {
+      Point P[2];
+      DummyLine() = delete;
+    };
+    // Min line is Line<2> which contains two points.
+    static constexpr uint32_t MaxLineWidth = Width;
+    // Number of different types of Line.
+    static constexpr uint32_t NumOfLineWidths = getPowOfTwo<MaxLineWidth>();
+    // Description size.
+    static constexpr uint32_t TotalLines = (1u << NumOfLineWidths) - 1u;
+    // Number of Min lines inside one Max line.
+    static constexpr uint32_t MinInMax = MaxLineWidth >> 1;
+    // Total number of point to which memory is allocated.
+    static constexpr uint32_t TotalPoints = MaxLineWidth * NumOfLineWidths;
   };
+  using I = Info<32>;
 
-  // Min line is Line<2> which contains two points.
-  static constexpr uint32_t MaxLineWidth = 16;
-  static constexpr uint32_t NumOfLineWidths = getPowOfTwo<MaxLineWidth>();
-  static constexpr uint32_t TotalLines = (1u << NumOfLineWidths) - 1;
-  static constexpr uint32_t MinInMax = MaxLineWidth >> 1;
-  static constexpr uint32_t TotalPoints = MaxLineWidth * NumOfLineWidths;
+  class CellDescription {
+    enum class Cell : uint8_t { FREE = 0, OCCUPIED, UNDEF };
+    static std::ostream &PrintCell(std::ostream &os, Cell const &C) {
+      switch (C) {
+      case Cell::FREE:
+        os << "free";
+        break;
+      case Cell::OCCUPIED:
+        os << "occu";
+        break;
+      default:
+        os << "udef";
+        break;
+      }
+      return os;
+    }
+    using Cells = std::vector<Cell>;
+    Cells Desc;
 
-  CellDescription CD{TotalLines};
+    static constexpr uint32_t LineMask = (1u << (I::NumOfLineWidths + 1u)) - 1u;
+    static constexpr uint32_t ShiftMask = LineMask ^ -1;
+
+    template <uint32_t Width>
+    uint32_t constexpr getDescIdxBeginOfCertainLine() const {
+      uint32_t const Shift = getPowOfTwo<Width>() - 1;
+      return (ShiftMask >> Shift) & LineMask;
+    }
+
+    template <uint32_t Width>
+    Cells::const_iterator getDescBeginOfCertainLine() const {
+      return Desc.begin() + getDescIdxBeginOfCertainLine<Width>();
+    }
+    template <uint32_t Width> Cells::iterator getDescBeginOfCertainLine() {
+      return Desc.begin() + getDescIdxBeginOfCertainLine<Width>();
+    }
+
+    template <uint32_t Width>
+    Cells::const_iterator getDescEndOfCertainLine() const {
+      uint32_t constexpr NextLine = Width << 1u;
+      return Desc.begin() + getDescIdxBeginOfCertainLine<NextLine>();
+    }
+    template <uint32_t Width> Cells::iterator getDescEndOfCertainLine() {
+      uint32_t constexpr NextLine = Width << 1u;
+      return Desc.begin() + getDescIdxBeginOfCertainLine<NextLine>();
+    }
+
+    template <uint32_t Width> Cells::iterator getFirstFreeCell() {
+      return std::find(getDescBeginOfCertainLine<Width>(),
+                       getDescEndOfCertainLine<Width>(), Cell::FREE);
+    }
+
+    uint32_t getMemoryOffset(uint32_t DescIdx) const {
+      uint32_t const Shifted = DescIdx << (32u - I::NumOfLineWidths);
+      uint32_t const RowIdx = std::countl_one(Shifted);
+      uint32_t const InnerOffsetMask =
+          (1 << (I::NumOfLineWidths - RowIdx)) - 1u;
+      uint32_t const InnerOffset = InnerOffsetMask & DescIdx;
+      return InnerOffset;
+    }
+
+    uint32_t getMemoryOffset(Cells::const_iterator It) const {
+      uint32_t const DescIdx = std::distance(Desc.begin(), It);
+      return getMemoryOffset(DescIdx);
+    }
+
+    uint32_t getMemoryOffset(Cells::iterator It) {
+      uint32_t const DescIdx = std::distance(Desc.begin(), It);
+      return getMemoryOffset(DescIdx);
+    }
+
+  public:
+    CellDescription() : Desc{I::TotalLines, Cell::FREE} {
+      std::cerr << "Allocating Description: " << Desc.size() << std::endl;
+    }
+
+    template <uint32_t Width> uint32_t retrieveFirstFree() {
+      auto const Begin = getDescBeginOfCertainLine<Width>();
+      auto const End = getDescEndOfCertainLine<Width>();
+      auto const FindIt = std::find(Begin, End, Cell::FREE);
+      if (FindIt == Desc.end())
+        std::cerr << "No free cells for Line<" << Width << ">." << std::endl;
+      *FindIt = Cell::OCCUPIED;
+      return getMemoryOffset(FindIt);
+    }
+
+    std::ostream &Print(std::ostream &os) const {
+      for (auto const &C : Desc)
+        PrintCell(os, C) << ' ';
+      return os;
+    }
+  } CD;
+
+  void *Buffer = nullptr;
 
   static void *allocMemory();
 
-  CellDescription::Cell const &getDescIdx(Point *P) const;
+  uint32_t getDescIdx(Point *Pnt) const;
 
 public:
   MemoryManager();
 
   template <uint32_t Width> Line<Width> createLine() {
-    static_assert(Width != 1 && "Line<1> is prohibited.");
-    uint32_t constexpr Row = getPowOfTwo<Width>() - 1;
-
-    uint32_t const DescIdx = CD.getFirstFreeIdx(Row);
-    uint32_t const LineIdx = CD.occupyLine(DescIdx);
-
-    std::cout << LineIdx << std::endl;
-    return Line<Width>::createLine(nullptr);
+    uint32_t const Offset = CD.retrieveFirstFree<Width>();
+    I::DummyLine *Start = static_cast<I::DummyLine *>(Buffer);
+    Point *Ptr = reinterpret_cast<Point *>(Start + Offset);
+    std::cerr << Offset << std::endl;
+    return Line<Width>::createLine(Ptr);
   }
 
   ~MemoryManager();

@@ -16,10 +16,18 @@ uint32_t constexpr getPowOfTwo(uint32_t N) {
 }
 
 template <uint32_t N>
-// Return j from N=2^j
+// requires HasSingleBit<N>
 uint32_t constexpr inline getPowOfTwo() {
-  static_assert(std::has_single_bit(N) && "N is not power of two.");
   return getPowOfTwo(N);
 }
+
+template <uint32_t N>
+concept HasSingleBit = std::has_single_bit(N);
+
+template <uint32_t N>
+concept NotOne = N != 1;
+
+template <uint32_t N>
+concept LegalLine = HasSingleBit<N> && NotOne<N>;
 
 } // namespace nmgr
