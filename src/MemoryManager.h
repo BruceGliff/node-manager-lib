@@ -97,9 +97,10 @@ class MemoryManager {
       uint32_t const Shifted = DescIdx << (32u - I::NumOfLineWidths);
       uint32_t const RowIdx = std::countl_one(Shifted);
       uint32_t const InnerOffsetMask =
-          (1 << (I::NumOfLineWidths - RowIdx)) - 1u;
+          (1u << (I::NumOfLineWidths - RowIdx)) - 1u;
       uint32_t const InnerOffset = InnerOffsetMask & DescIdx;
-      return InnerOffset;
+      uint32_t const MemoryOffset = RowIdx * I::MinInMax + InnerOffset;
+      return MemoryOffset;
     }
 
     uint32_t getMemoryOffset(Cells::const_iterator It) const {
@@ -161,9 +162,10 @@ public:
     }
     // TODO Offset does not work.
     uint32_t const Offset = IsOffset.value();
+    std::cerr << Offset << std::endl;
     I::DummyLine *Start = static_cast<I::DummyLine *>(Buffer);
     Point *Ptr = reinterpret_cast<Point *>(Start + Offset);
-    // CD.print(std::cerr) << std::endl;
+    CD.print(std::cerr) << std::endl;
     return Line<Width>::createLine(Ptr);
   }
 
