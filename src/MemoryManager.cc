@@ -8,6 +8,63 @@
 
 using namespace nmgr;
 
+std::ostream &MemoryManager::CellDescription::printCell(std::ostream &os,
+                                                        Cell const &C) {
+  switch (C) {
+  case Cell::FREE:
+    os << "f";
+    break;
+  case Cell::OCCUPIED:
+    os << "o";
+    break;
+  default:
+    os << "u";
+    break;
+  }
+  return os;
+}
+
+uint32_t
+MemoryManager::CellDescription::getMemoryOffset(uint32_t DescIdx) const {
+  uint32_t const Shifted = DescIdx << (32u - I::NumOfLineWidths);
+  uint32_t const RowIdx = std::countl_one(Shifted);
+  uint32_t const InnerOffsetMask = (1u << (I::NumOfLineWidths - RowIdx)) - 1u;
+  uint32_t const InnerOffset = InnerOffsetMask & DescIdx;
+  uint32_t const MemoryOffset = RowIdx * I::MinInMax + InnerOffset;
+  return MemoryOffset;
+}
+
+uint32_t MemoryManager::CellDescription::getMemoryOffset(
+    Cells::const_iterator It) const {
+  uint32_t const DescIdx = std::distance(Desc.begin(), It);
+  return getMemoryOffset(DescIdx);
+}
+
+uint32_t MemoryManager::CellDescription::getMemoryOffset(Cells::iterator It) {
+  uint32_t const DescIdx = std::distance(Desc.begin(), It);
+  return getMemoryOffset(DescIdx);
+}
+
+MemoryManager::CellDescription::CellDescription()
+    : Desc{I::TotalLines, Cell::FREE} {
+  std::cerr << "Allocating Description: " << Desc.size() << std::endl;
+}
+
+std::ostream &MemoryManager::CellDescription::print(std::ostream &os) const {
+  uint32_t Inc = 0;
+  uint32_t Latch = I::MinInMax;
+  os << '|';
+  for (auto const &C : Desc) {
+    printCell(os, C);
+    if (++Inc == Latch) {
+      os << '|';
+      Latch /= 2;
+      Inc = 0;
+    }
+  }
+  return os;
+}
+
 MemoryManager::MemoryManager() : Buffer(allocMemory()) {}
 
 uint32_t MemoryManager::getDescIdx(Point *Pnt) const {
