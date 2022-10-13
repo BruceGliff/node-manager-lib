@@ -3,6 +3,11 @@ namespace nmgr {
 template <uint32_t Width>
 uint32_t constexpr MemoryManager::CellDescription::
     getDescIdxBeginOfCertainLine() const {
+  // Masked usefull bits in Desc responsible for LineIdx.
+  constexpr uint32_t LineMask = (1u << I::NumOfLineWidths) - 1u;
+  constexpr uint32_t ShiftMask = LineMask ^ -1;
+  // Amount of bits to shift to get the Number, responsible for Description
+  // begining for sertain Line<Width>.
   uint32_t const Shift = getPowOfTwo<Width>() - 1;
   uint32_t const DescIdx = (ShiftMask >> Shift) & LineMask;
   return DescIdx;
@@ -55,14 +60,14 @@ template <uint32_t Width> Line<Width> MemoryManager::createLine() {
   std::cerr << "Attempt to create Line<" << Width << ">." << std::endl;
   auto const IsOffset = CD.retrieveFirstFree<Width>();
   if (!IsOffset) {
-    // std::cerr << "No free cells for Line<" << Width << ">." << std::endl;
+    std::cerr << "No free cells for Line<" << Width << ">." << std::endl;
     return Line<Width>::createLine(nullptr);
   }
   uint32_t const Offset = IsOffset.value();
-  // std::cerr << Offset << std::endl;
+  std::cerr << Offset << std::endl;
   I::DummyLine *Start = static_cast<I::DummyLine *>(Buffer);
   Point *Ptr = reinterpret_cast<Point *>(Start + Offset);
-  // CD.print(std::cerr) << std::endl;
+  CD.print(std::cerr) << std::endl;
   return Line<Width>::createLine(Ptr);
 }
 
