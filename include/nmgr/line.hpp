@@ -4,15 +4,17 @@
 
 namespace nmgr {
 
+class MemoryManager;
 class LineBase {};
 
 template <uint32_t Width>
 requires LegalLine<Width>
 class Line : public LineBase {
+  friend MemoryManager;
   // Const data and const pointer.
   Point const *const Points = nullptr;
 
-  unsigned Size = 0;
+  static unsigned constexpr Size = Width;
   Line(Point const *P) : Points{P} {}
 
 public:

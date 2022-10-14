@@ -64,10 +64,10 @@ template <uint32_t Width> Line<Width> MemoryManager::createLine() {
     return Line<Width>::createLine(nullptr);
   }
   uint32_t const Offset = IsOffset.value();
-  std::cerr << Offset << std::endl;
+  // std::cerr << "Memory offset: " << Offset << std::endl;
   I::DummyLine *Start = static_cast<I::DummyLine *>(Buffer);
   Point *Ptr = reinterpret_cast<Point *>(Start + Offset);
-  CD.print(std::cerr) << std::endl;
+  // CD.print(std::cerr) << std::endl;
   return Line<Width>::createLine(Ptr);
 }
 

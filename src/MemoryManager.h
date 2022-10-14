@@ -126,7 +126,14 @@ class MemoryManager {
   // Returns position of the sertain line description.
   // TODO not tested. Believe it should be getDescIdx(Line L). Copy of the line
   // is possible because it contains only pointer.
-  uint32_t getDescIdx(Point *Pnt) const;
+  uint32_t getDescIdx(Point const *Pnt) const;
+  // TODO this is public just to check everything is ok.
+public:
+  template <typename T>
+    requires std::is_base_of_v<LineBase, T>
+  uint32_t getDescIdx(T L) const {
+    return getDescIdx(L.Points);
+  }
 
 public:
   MemoryManager();
