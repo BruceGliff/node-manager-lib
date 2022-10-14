@@ -1,10 +1,13 @@
 #pragma once
 
+#include <bit>
+#include <cstdint>
+
 namespace nmgr {
 
 // Return j from N=2^j
-unsigned constexpr getPowOfTwo(unsigned N) {
-  unsigned J = 0;
+uint32_t constexpr getPowOfTwo(uint32_t N) {
+  uint32_t J = 0;
   while (N > 1) {
     N >>= 1;
     ++J;
@@ -12,13 +15,19 @@ unsigned constexpr getPowOfTwo(unsigned N) {
   return J;
 }
 
-template <unsigned N>
-// Return j from N=2^j
-unsigned constexpr inline getPowOfTwo() {
-  static_assert(N && "N cannot be 0.");
-  static_assert((N & -N) == N && "N is not power of two.");
-
+template <uint32_t N>
+// requires HasSingleBit<N>
+uint32_t constexpr inline getPowOfTwo() {
   return getPowOfTwo(N);
 }
+
+template <uint32_t N>
+concept HasSingleBit = std::has_single_bit(N);
+
+template <uint32_t N>
+concept NotOne = N != 1;
+
+template <uint32_t N>
+concept LegalLine = HasSingleBit<N> && NotOne<N>;
 
 } // namespace nmgr

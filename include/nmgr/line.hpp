@@ -4,18 +4,21 @@
 
 namespace nmgr {
 
+class MemoryManager;
 class LineBase {};
 
-template <unsigned Width>
-// TODO check that Width is power of two.
+template <uint32_t Width>
+requires LegalLine<Width>
 class Line : public LineBase {
-  Point *Points = nullptr;
+  friend MemoryManager;
+  // Const data and const pointer.
+  Point const *const Points = nullptr;
 
-  unsigned Size = 0;
-  Line() {} //
+  static unsigned constexpr Size = Width;
+  Line(Point const *P) : Points{P} {}
 
 public:
-  static Line createLine(/*memory manager.*/) { return Line{}; }
+  static Line createLine(Point const *P) { return Line{P}; }
 };
 
 } // namespace nmgr
