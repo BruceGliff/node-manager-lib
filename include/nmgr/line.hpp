@@ -28,6 +28,11 @@ class Line final : public LineBase {
   Point *const Pts = nullptr;
   uint32_t Size = 0u;
 
+  Point const *closest(Point const &P) {
+    // TODO
+    return Pts;
+  }
+
   Line(Point *P) : Pts{P} {}
 
   static uint32_t constexpr Capacity = Width;
@@ -47,6 +52,7 @@ public:
   iterator end() { return Pts + Size; }
   const_iterator end() const { return Pts + Size; }
 
+  // This just appends Point in the end of the Line.
   Line &append(Point &&P) {
     if (Size >= Capacity) {
       std::cout << "Line is full\n";
@@ -55,6 +61,13 @@ public:
     Pts[Size++] = P;
     return *this;
   }
+
+  // Finds the closest point in the Line.
+  // If the closest point is the end -> appends Line.
+  // If the closest point is the begin -> reverse and append.
+  // If the closest point in the middle ->
+  //   creates joint, creates line, returns new created line.
+  Line insert(Point &&P) {}
 
   std::span<Point> getView() const { return std::span<Point>(Pts, Size); }
 };
