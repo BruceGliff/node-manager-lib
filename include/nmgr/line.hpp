@@ -23,18 +23,18 @@ class Line : public LineBase {
 
   // TODO create own iterator.
   // TODO create getView() { return std::span() };
-  std::span<Point const> Pts;
+  std::span<Point> Pts;
 
-  Line(Point const *P) : Pts{P, 0u} {}
+  Line(Point *P) : Pts{P, 0u} {}
 
   static uint32_t constexpr Capacity = Width;
 
-  Point const *getRawPts() const { return Pts.data(); }
+  Point *getRawPts() const { return Pts.data(); }
   uint32_t getSize() const { return Pts.size(); }
 
 public:
   static Line
-  createLine(Point const *P) { /*Log about creating outside MemoryManager*/
+  createLine(Point *P) { /*Log about creating outside MemoryManager*/
     return Line{P};
   }
 
@@ -50,10 +50,11 @@ public:
       std::cout << "Line is full\n";
       return *this;
     }
-    auto *Raw = getRawPts();
+    Point *Raw = getRawPts();
     Raw[Size++] = P;
 
     Pts = std::span(Raw, Size);
+    return *this;
   }
 };
 

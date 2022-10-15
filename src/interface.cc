@@ -35,3 +35,15 @@ void nmgr::createMemory() {
   // M.createLine<1u << 28>();
   // M.createLine<1u << 31>();
 }
+
+void nmgr::lineTest() {
+
+  MemoryManager M;
+  auto L = M.createLine<16>();
+
+  for (int i = 0; i != 17; ++i)
+    L.append({i * 1.1f, i * 0.5f});
+
+  for (auto &&x : L)
+    std::cerr << x << ' ';
+}
