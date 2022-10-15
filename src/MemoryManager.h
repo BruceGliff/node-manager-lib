@@ -33,7 +33,7 @@ namespace nmgr {
 //   Line<8>:  |.. .. .. ..|.. .. .. ..|
 //   Line<16>: |.. .. .. .. .. .. .. ..|
 // PS: but memory is linear.
-class MemoryManager {
+class MemoryManager final {
 
   // Compile-time known information about line alignment.
   template <uint32_t Width> struct Info {
@@ -64,7 +64,7 @@ class MemoryManager {
   // CellDescription is a class which describes which lines are occupied and
   // which are free. It can be represented as an array of Cells. For MaxWidth =
   // 16: Cells: |........|....|..|.| where '.' means Cell or Line.
-  class CellDescription {
+  class CellDescription final {
     enum class Cell : uint8_t { FREE = 0, OCCUPIED, UNDEF };
     static std::ostream &printCell(std::ostream &os, Cell const &C);
 
@@ -134,7 +134,7 @@ public:
   template <typename T>
     requires std::is_base_of_v<LineBase, T>
   uint32_t getDescIdx(T L) const {
-    return getDescIdx(L.getRawPts());
+    return getDescIdx(L.Pts);
   }
 
 public:

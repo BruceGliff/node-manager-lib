@@ -1,6 +1,7 @@
 #pragma once
 
-#include <nmgr/point.h>
+#include "line-iterator.hpp"
+#include "point.h"
 
 #include <ranges>
 #include <span>
@@ -17,20 +18,19 @@ class MemoryManager;
 class LineBase {};
 
 template <uint32_t Width>
-requires LegalLine<Width>
-class Line : public LineBase {
+  requires LegalLine<Width>
+class Line final : public LineBase {
   friend MemoryManager;
 
-  // TODO create own iterator.
-  // TODO create getView() { return std::span() };
-  std::span<Point> Pts;
+  using iterator = LineIt<Point>;
+  using const_iterator = LineIt<Point const>;
 
-  Line(Point *P) : Pts{P, 0u} {}
+  Point *const Pts = nullptr;
+  uint32_t Size = 0u;
+
+  Line(Point *P) : Pts{P} {}
 
   static uint32_t constexpr Capacity = Width;
-
-  Point *getRawPts() const { return Pts.data(); }
-  uint32_t getSize() const { return Pts.size(); }
 
 public:
   static Line
@@ -38,24 +38,25 @@ public:
     return Line{P};
   }
 
-  auto begin() { return Pts.begin(); }
-  auto begin() const { return Pts.begin(); }
+  operator bool() { return Pts; }
+  bool empty() { return !Size; }
 
-  auto end() { return Pts.end(); }
-  auto end() const { return Pts.end(); }
+  iterator begin() { return Pts; }
+  const_iterator begin() const { return Pts; }
+
+  iterator end() { return Pts + Size; }
+  const_iterator end() const { return Pts + Size; }
 
   Line &append(Point &&P) {
-    uint32_t Size = getSize();
     if (Size >= Capacity) {
       std::cout << "Line is full\n";
       return *this;
     }
-    Point *Raw = getRawPts();
-    Raw[Size++] = P;
-
-    Pts = std::span(Raw, Size);
+    Pts[Size++] = P;
     return *this;
   }
+
+  std::span<Point> getView() const { return std::span<Point>(Pts, Size); }
 };
 
 } // namespace nmgr

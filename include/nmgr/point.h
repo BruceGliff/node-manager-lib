@@ -4,7 +4,7 @@
 
 namespace nmgr {
 
-struct Point {
+struct Point final {
   float X;
   float Y;
 };

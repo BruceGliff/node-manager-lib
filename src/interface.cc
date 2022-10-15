@@ -28,7 +28,9 @@ void nmgr::createMemory() {
   auto L16_1 = M.createLine<16u>();
   std::cout << "Back: " << M.getDescIdx(L16_1) << std::endl;
   auto L16_2 = M.createLine<16u>();
-  std::cout << "Back: " << M.getDescIdx(L16_2) << std::endl;
+  if (!L16_2)
+    std::cout << "Line not valid\n";
+  // std::cout << "Back: " << M.getDescIdx(L16_2) << std::endl;
   auto L32 = M.createLine<32u>();
   std::cout << "Back: " << M.getDescIdx(L32) << std::endl;
   // M.createLine<128u>();
@@ -37,7 +39,6 @@ void nmgr::createMemory() {
 }
 
 void nmgr::lineTest() {
-
   MemoryManager M;
   auto L = M.createLine<16>();
 
