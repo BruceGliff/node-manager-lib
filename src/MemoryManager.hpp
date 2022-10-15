@@ -1,7 +1,7 @@
 namespace nmgr {
 
 template <uint32_t Width>
-uint32_t constexpr MemoryManager::CellDescription::
+inline uint32_t constexpr MemoryManager::CellDescription::
     getDescIdxBeginOfCertainLine() const {
   // Masked usefull bits in Desc responsible for LineIdx.
   constexpr uint32_t LineMask = (1u << I::NumOfLineWidths) - 1u;
@@ -14,39 +14,40 @@ uint32_t constexpr MemoryManager::CellDescription::
 }
 
 template <uint32_t Width>
-MemoryManager::CellDescription::Cells::const_iterator
+inline MemoryManager::CellDescription::Cells::const_iterator
 MemoryManager::CellDescription::getDescBeginOfCertainLine() const {
   return Desc.begin() + getDescIdxBeginOfCertainLine<Width>();
 }
 template <uint32_t Width>
-MemoryManager::CellDescription::Cells::iterator
+inline MemoryManager::CellDescription::Cells::iterator
 MemoryManager::CellDescription::getDescBeginOfCertainLine() {
   return Desc.begin() + getDescIdxBeginOfCertainLine<Width>();
 }
 
 template <uint32_t Width>
-MemoryManager::CellDescription::Cells::const_iterator
+inline MemoryManager::CellDescription::Cells::const_iterator
 MemoryManager::CellDescription::getDescEndOfCertainLine() const {
   uint32_t constexpr NextLine = Width << 1u;
   return Desc.begin() + getDescIdxBeginOfCertainLine<NextLine>();
 }
 
 template <uint32_t Width>
-MemoryManager::CellDescription::Cells::iterator
+inline MemoryManager::CellDescription::Cells::iterator
 MemoryManager::CellDescription::getDescEndOfCertainLine() {
   uint32_t constexpr NextLine = Width << 1u;
   return Desc.begin() + getDescIdxBeginOfCertainLine<NextLine>();
 }
 
 template <uint32_t Width>
-MemoryManager::CellDescription::Cells::iterator
+inline MemoryManager::CellDescription::Cells::iterator
 MemoryManager::CellDescription::getFirstFreeCell() {
   return std::find(getDescBeginOfCertainLine<Width>(),
                    getDescEndOfCertainLine<Width>(), Cell::FREE);
 }
 
 template <uint32_t Width>
-std::optional<uint32_t> MemoryManager::CellDescription::retrieveFirstFree() {
+inline std::optional<uint32_t>
+MemoryManager::CellDescription::retrieveFirstFree() {
   auto const Begin = getDescBeginOfCertainLine<Width>();
   auto const End = getDescEndOfCertainLine<Width>();
   auto const FindIt = std::find(Begin, End, Cell::FREE);
@@ -56,7 +57,7 @@ std::optional<uint32_t> MemoryManager::CellDescription::retrieveFirstFree() {
   return getMemoryOffset(FindIt);
 }
 
-template <uint32_t Width> Line<Width> MemoryManager::createLine() {
+template <uint32_t Width> inline Line<Width> MemoryManager::createLine() {
   std::cerr << "Attempt to create Line<" << Width << ">." << std::endl;
   auto const IsOffset = CD.retrieveFirstFree<Width>();
   if (!IsOffset) {

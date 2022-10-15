@@ -74,31 +74,32 @@ class MemoryManager {
     // Returns the index which indicates the begining of the description of
     // sertain lines with the Width.
     template <uint32_t Width>
-    uint32_t constexpr getDescIdxBeginOfCertainLine() const;
+    inline uint32_t constexpr getDescIdxBeginOfCertainLine() const;
 
     // Returns the const iterator of Desc indicates the begining of the
     // description of sertain lines with the Width.
     template <uint32_t Width>
-    Cells::const_iterator getDescBeginOfCertainLine() const;
+    inline Cells::const_iterator getDescBeginOfCertainLine() const;
     // Returns the iterator of Desc indicates the begining of the description of
     // sertain lines with the Width.
-    template <uint32_t Width> Cells::iterator getDescBeginOfCertainLine();
+    template <uint32_t Width>
+    inline Cells::iterator getDescBeginOfCertainLine();
 
     // Returns the const iterator of Desc indicates the ending of the
     // description of sertain lines with the Width. It is the same as the
     // begining of line with Width*2.
     template <uint32_t Width>
-    Cells::const_iterator getDescEndOfCertainLine() const;
+    Cells::const_iterator inline getDescEndOfCertainLine() const;
     // Returns the iterator of Desc indicates the ending of the description of
     // sertain lines with the Width. It is the same as the begining of line with
     // Width*2.
-    template <uint32_t Width> Cells::iterator getDescEndOfCertainLine();
+    template <uint32_t Width> inline Cells::iterator getDescEndOfCertainLine();
 
     // Returns the iterator of Desc to the first free cell for sertain line with
     // the Width. If there are no free cells, it will return end of the
     // description of the sertain line (or end of Description for
     // Line<MaxWidth>).
-    template <uint32_t Width> Cells::iterator getFirstFreeCell();
+    template <uint32_t Width> inline Cells::iterator getFirstFreeCell();
 
     // Returns offset of the Line in MemoryManager which is defined by DescIdx.
     uint32_t getMemoryOffset(uint32_t DescIdx) const;
@@ -112,7 +113,8 @@ class MemoryManager {
 
     // Returns offset for the Line<Width> which is not occupied and occupies
     // corresponsible cell. Returns None if there is no free space for line.
-    template <uint32_t Width> std::optional<uint32_t> retrieveFirstFree();
+    template <uint32_t Width>
+    std::optional<uint32_t> inline retrieveFirstFree();
 
     // Prints whole description.
     std::ostream &print(std::ostream &os) const;
@@ -142,7 +144,7 @@ public:
   // If there is no free space for line it will return Line with
   // pointer=nullptr.
   // TODO override bool operator?
-  template <uint32_t Width> Line<Width> createLine();
+  template <uint32_t Width> Line<Width> inline createLine();
 
   ~MemoryManager();
 };

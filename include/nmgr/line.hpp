@@ -4,6 +4,9 @@
 
 namespace nmgr {
 
+template <uint32_t N>
+concept LegalLine = HasSingleBit<N> && NotOne<N>;
+
 class MemoryManager;
 class LineBase {};
 
