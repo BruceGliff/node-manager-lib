@@ -134,7 +134,7 @@ public:
   template <typename T>
     requires std::is_base_of_v<LineBase, T>
   uint32_t getDescIdx(T L) const {
-    return getDescIdx(L.Points);
+    return getDescIdx(L.getRawPts());
   }
 
 public:

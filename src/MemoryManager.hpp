@@ -69,7 +69,7 @@ template <uint32_t Width> inline Line<Width> MemoryManager::createLine() {
   I::DummyLine *Start = static_cast<I::DummyLine *>(Buffer);
   Point *Ptr = reinterpret_cast<Point *>(Start + Offset);
   // CD.print(std::cerr) << std::endl;
-  return Line<Width>::createLine(Ptr);
+  return Line<Width>{Ptr};
 }
 
 } // namespace nmgr
