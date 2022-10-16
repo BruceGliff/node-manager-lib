@@ -3,8 +3,10 @@
 #include "line-iterator.hpp"
 #include "point.h"
 
+#include <algorithm>
 #include <ranges>
 #include <span>
+#include <variant>
 
 // TODO remove
 #include <iostream>
@@ -15,7 +17,10 @@ template <uint32_t N>
 concept LegalLine = HasSingleBit<N> && NotOne<N>;
 
 class MemoryManager;
-class LineBase {};
+class LineBase {
+public:
+  virtual LineBase &append(Point &&P) = 0;
+};
 
 template <uint32_t Width>
   requires LegalLine<Width>
@@ -28,9 +33,17 @@ class Line final : public LineBase {
   Point *const Pts = nullptr;
   uint32_t Size = 0u;
 
-  Point const *closest(Point const &P) {
-    // TODO
-    return Pts;
+  // TODO find more faster way to do it.
+  const_iterator closest(Point const &P) const {
+    // Calculating closest point in line to Input.
+    std::pair<Point const *, float> ClosestP;
+    std::for_each(begin(), end(), [&ClosestP, &P](Point const &PIn) {
+      float const CheckDiff = Point::length_sq(P, PIn);
+      if (CheckDiff > ClosestP.second)
+        return;
+      ClosestP = std::make_pair(&PIn, CheckDiff);
+    });
+    return ClosestP.first;
   }
 
   Line(Point *P) : Pts{P} {}
@@ -53,12 +66,12 @@ public:
   const_iterator end() const { return Pts + Size; }
 
   // This just appends Point in the end of the Line.
-  Line &append(Point &&P) {
+  LineBase &append(Point &&P) override {
     if (Size >= Capacity) {
       std::cout << "Line is full\n";
       return *this;
     }
-    Pts[Size++] = P;
+    Pts[Size++] = std::move(P);
     return *this;
   }
 
@@ -67,7 +80,28 @@ public:
   // If the closest point is the begin -> reverse and append.
   // If the closest point in the middle ->
   //   creates joint, creates line, returns new created line.
-  Line insert(Point &&P) {}
+  Line<2> insert(Point &&P) {
+    const_iterator Closest = closest(P);
+
+    // This logic is kinda stupid. Believe I should get rid of template.
+    Line<2> Ret;
+    LineBase *LB = this;
+    if (Closest == begin()) {
+      // Think it is better for huge lines to create new line, when to extend
+      // backward.
+      std::cout << "reverse\n";
+    } else if (Closest != end()) {
+      std::cout << "creating joint\n";
+      // TODO from manager.
+      Ret = Line<2>::createLine(nullptr);
+      LB = &Ret;
+    }
+
+    // It will append or this line, or new created one.
+    LB->append(std::move(P));
+
+    return Ret;
+  }
 
   std::span<Point> getView() const { return std::span<Point>(Pts, Size); }
 };
