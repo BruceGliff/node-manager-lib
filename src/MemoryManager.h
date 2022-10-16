@@ -2,6 +2,7 @@
 
 #include "PowOfTwo.h"
 #include "nmgr/line.hpp"
+#include "singleton.h"
 
 #include <cstdint>
 #include <optional>
@@ -33,7 +34,9 @@ namespace nmgr {
 //   Line<8>:  |.. .. .. ..|.. .. .. ..|
 //   Line<16>: |.. .. .. .. .. .. .. ..|
 // PS: but memory is linear.
-class MemoryManager final {
+class MemoryManager final : protected singleton<MemoryManager> {
+  friend singleton;
+  MemoryManager();
 
   // Compile-time known information about line alignment.
   template <uint32_t Width> struct Info {
@@ -138,8 +141,6 @@ public:
   }
 
 public:
-  MemoryManager();
-
   // Returns free Line<Width>.
   // If there is no free space for line it will return Line with
   // pointer=nullptr.

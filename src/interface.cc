@@ -3,7 +3,8 @@
 #include "MemoryManager.h"
 
 void nmgr::createMemory() {
-  MemoryManager M;
+  MemoryManager &M = singleton<MemoryManager>::getInstance();
+  ;
   // M.createLine<1u>();
   auto L2 = M.createLine<2u>();
   std::cout << "Back: " << M.getDescIdx(L2) << std::endl;
@@ -39,7 +40,8 @@ void nmgr::createMemory() {
 }
 
 void nmgr::lineTest() {
-  MemoryManager M;
+  MemoryManager &M = singleton<MemoryManager>::getInstance();
+  ;
   auto L = M.createLine<16>();
 
   for (int i = 0; i != 17; ++i)
