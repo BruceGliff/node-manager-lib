@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MemoryManager.h"
 #include "line-iterator.hpp"
 #include "point.h"
 
@@ -92,7 +93,8 @@ public:
       std::cout << "reverse\n";
     } else if (Closest != end()) {
       std::cout << "creating joint\n";
-      // TODO from manager.
+      // TODO from manager. include problem
+      Ret = singleton<MemoryManager>::getInstance().createLine();
       Ret = Line<2>::createLine(nullptr);
       LB = &Ret;
     }
