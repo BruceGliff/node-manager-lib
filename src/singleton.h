@@ -4,12 +4,14 @@
 
 namespace nmgr {
 
+class Memorymanager;
+
 template <typename Parent> class singleton {
 public:
   using InstanceTy = std::unique_ptr<Parent>;
 
 private:
-  static InstanceTy Instance;
+  static inline InstanceTy Instance{nullptr};
 
 protected:
   singleton() {}
@@ -22,5 +24,8 @@ public:
     return *Instance.get();
   }
 };
+
+extern template singleton<MemoryManager>::InstanceTy
+    singleton<MemoryManager>::Instance;
 
 } // namespace nmgr

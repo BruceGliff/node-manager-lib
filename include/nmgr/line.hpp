@@ -1,8 +1,9 @@
 #pragma once
 
-#include "MemoryManager.h"
 #include "line-iterator.hpp"
 #include "point.h"
+// TODO maybe it should be closed for user.
+#include "lib-interface.h"
 
 #include <algorithm>
 #include <ranges>
@@ -13,9 +14,6 @@
 #include <iostream>
 
 namespace nmgr {
-
-template <uint32_t N>
-concept LegalLine = HasSingleBit<N> && NotOne<N>;
 
 class MemoryManager;
 class LineBase {
@@ -47,11 +45,24 @@ class Line final : public LineBase {
     return ClosestP.first;
   }
 
+  Line() = default;
   Line(Point *P) : Pts{P} {}
 
   static uint32_t constexpr Capacity = Width;
 
 public:
+  Line(Line const &Other) = default;
+  Line(Line &&Other) = default;
+  Line &operator=(Line const &Other) {
+    Pts = Other.Pts, Size = Other.Size;
+    return *this;
+  }
+  Line &operator=(Line &&Other) {
+    std::swap(Pts, Other.Pts);
+    std::swap(Size, Other.Size);
+    return *this;
+  }
+
   static Line
   createLine(Point *P) { /*Log about creating outside MemoryManager*/
     return Line{P};
@@ -94,8 +105,7 @@ public:
     } else if (Closest != end()) {
       std::cout << "creating joint\n";
       // TODO from manager. include problem
-      Ret = singleton<MemoryManager>::getInstance().createLine();
-      Ret = Line<2>::createLine(nullptr);
+      Ret = LIB::createDefaultLine();
       LB = &Ret;
     }
 

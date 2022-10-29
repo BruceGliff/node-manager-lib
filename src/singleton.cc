@@ -1,5 +1,6 @@
 #include "MemoryManager.h"
 
-template <>
-nmgr::singleton<nmgr::MemoryManager>::InstanceTy
-    nmgr::singleton<nmgr::MemoryManager>::Instance{nullptr};
+#define INSTANCE(Class)                                                        \
+  template nmgr::singleton<Class>::InstanceTy nmgr::singleton<Class>::Instance;
+
+INSTANCE(nmgr::MemoryManager);

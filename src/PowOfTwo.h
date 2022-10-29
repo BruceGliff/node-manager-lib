@@ -1,6 +1,5 @@
 #pragma once
 
-#include <bit>
 #include <cstdint>
 
 namespace nmgr {
@@ -20,11 +19,5 @@ template <uint32_t N>
 uint32_t constexpr inline getPowOfTwo() {
   return getPowOfTwo(N);
 }
-
-template <uint32_t N>
-concept HasSingleBit = std::has_single_bit(N);
-
-template <uint32_t N>
-concept NotOne = N != 1;
 
 } // namespace nmgr
