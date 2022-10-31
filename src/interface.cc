@@ -3,7 +3,7 @@
 #include "MemoryManager.h"
 
 void nmgr::createMemory() {
-  MemoryManager &M = singleton<MemoryManager>::getInstance();
+  MemoryManager &M = MemoryManager::getInstance();
   ;
   // M.createLine<1u>();
   auto L2 = M.createLine<2u>();
@@ -40,7 +40,7 @@ void nmgr::createMemory() {
 }
 
 void nmgr::lineTest() {
-  MemoryManager &M = singleton<MemoryManager>::getInstance();
+  MemoryManager &M = MemoryManager::getInstance();
   ;
   auto L = M.createLine<16>();
 

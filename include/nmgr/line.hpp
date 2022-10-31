@@ -29,7 +29,7 @@ class Line final : public LineBase {
   using iterator = LineIt<Point>;
   using const_iterator = LineIt<Point const>;
 
-  Point *const Pts = nullptr;
+  Point *Pts = nullptr;
   uint32_t Size = 0u;
 
   // TODO find more faster way to do it.

@@ -34,7 +34,7 @@ namespace nmgr {
 //   Line<8>:  |.. .. .. ..|.. .. .. ..|
 //   Line<16>: |.. .. .. .. .. .. .. ..|
 // PS: but memory is linear.
-class MemoryManager final : protected singleton<MemoryManager> {
+class MemoryManager final : public singleton<MemoryManager> {
   friend singleton;
   MemoryManager();
 

@@ -8,7 +8,7 @@ using namespace nmgr;
 namespace LIB {
 
 Line<2> createDefaultLine() {
-  return singleton<MemoryManager>::getInstance().createLine<2>();
+  return MemoryManager::getInstance().createLine<2>();
 }
 
 } // namespace LIB
