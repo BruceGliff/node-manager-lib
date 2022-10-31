@@ -18,6 +18,7 @@ namespace nmgr {
 class MemoryManager;
 class LineBase {
 public:
+  virtual uint32_t getCapacity() const = 0;
   virtual LineBase &append(Point &&P) = 0;
 };
 
@@ -62,6 +63,8 @@ public:
     std::swap(Size, Other.Size);
     return *this;
   }
+
+  uint32_t getCapacity() const override { return Line::Capacity; };
 
   static Line
   createLine(Point *P) { /*Log about creating outside MemoryManager*/

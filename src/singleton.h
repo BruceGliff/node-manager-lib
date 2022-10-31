@@ -4,7 +4,10 @@
 
 namespace nmgr {
 
-class Memorymanager;
+class MemoryManager;
+namespace collision {
+class CollManager;
+} // namespace collision
 
 template <typename Parent> class singleton {
 public:
@@ -27,5 +30,7 @@ public:
 
 extern template singleton<MemoryManager>::InstanceTy
     singleton<MemoryManager>::Instance;
+extern template singleton<collision::CollManager>::InstanceTy
+    singleton<collision::CollManager>::Instance;
 
 } // namespace nmgr

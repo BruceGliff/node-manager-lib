@@ -1,6 +1,7 @@
 #include "nmgr/interface.h"
 
 #include "MemoryManager.h"
+#include "collision.h"
 
 void nmgr::createMemory() {
   MemoryManager &M = MemoryManager::getInstance();
@@ -49,4 +50,25 @@ void nmgr::lineTest() {
 
   for (auto &&x : L)
     std::cerr << x << ' ';
+}
+
+void nmgr::collTest() {
+
+  auto &M = nmgr::collision::CollManager::getInstance();
+
+  auto *C = M.getShape();
+
+  M.getShape();
+  M.getShape();
+  M.getShape();
+  M.getShape();
+  M.getShape();
+  M.getShape();
+
+  M.getCollision();
+  M.getCollision();
+  M.getCollision();
+  M.getCollision();
+  M.getCollision();
+  M.getCollision();
 }
